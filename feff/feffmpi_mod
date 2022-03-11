@@ -1,0 +1,27 @@
+#!/bin/bash
+set -euo pipefail
+homedir=`find ~ -maxdepth 3 -name "server.me.sh" -print -quit|xargs dirname`/
+
+FeffPath=${homedir}software/feff10_mod/bin/MPI
+if [ $# = 0 ]; then
+    MPICOMMAND="mpirun "
+else
+    MPICOMMAND="mpirun -np $1 "
+fi
+$MPICOMMAND $FeffPath/rdinp
+$MPICOMMAND $FeffPath/atomic
+$MPICOMMAND $FeffPath/dmdw
+$MPICOMMAND $FeffPath/opconsat
+$MPICOMMAND $FeffPath/pot
+$MPICOMMAND $FeffPath/ldos
+$MPICOMMAND $FeffPath/screen
+$MPICOMMAND $FeffPath/xsph
+$MPICOMMAND $FeffPath/fms
+$MPICOMMAND $FeffPath/mkgtr
+$MPICOMMAND $FeffPath/path
+$MPICOMMAND $FeffPath/genfmt
+$MPICOMMAND $FeffPath/ff2x
+$MPICOMMAND $FeffPath/sfconv
+$MPICOMMAND $FeffPath/compton
+$MPICOMMAND $FeffPath/eels
+$MPICOMMAND $FeffPath/rhorrp
