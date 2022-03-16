@@ -2,15 +2,11 @@ import local_module
 import os
 import xas_module
 
-list1d_workdir=[]
-#----------------------------------
-list1d_workdir.append('110.x2y1.a1b2_O3_a1b2')
+list1d_key = local_module.def_list1d_key()
+dict_structure = local_module.def_dict_structure( )
 
-#----------------------------------[loop]
-dict_structure = local_module.def_dict_structure()
-
-for str_workdir in list1d_workdir:
-    class_structure = dict_structure[ str_workdir ]
+for str_key in list1d_key:
+    class_structure = dict_structure[ str_key ]
     str_chdir = class_structure.str_chdir
     os.chdir(str_chdir)
     print(os.getcwd())

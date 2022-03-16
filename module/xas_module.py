@@ -221,7 +221,7 @@ def def_vasp_sub( class_structure ):
         str_subfile = file_sub.read()
     os.chdir('..')
 
-    for list1d_atomi in class_structure.dict_atom.values():
+    for int_atomi, list1d_atomi in class_structure.dict_atom.items():
         str_atomdir = list1d_atomi[1]
         os.chdir(str_atomdir)
 
@@ -260,7 +260,9 @@ def def_vasp_jobinit( class_structure ):
     for int_i in range(len(list1d_atomname)):
         int_val = dict_pot[ list1d_atomname[ int_i ] ][1]
         int_atomnum = list1d_atomnum[ int_i ]
+        print( list1d_atomname[ int_i ], 'int_atomnum=', int_atomnum, 'int_val=', int_val )
         int_nelect += int_val * int_atomnum
+    print('int_nelect=', int_nelect)
     with open('INCAR','r+') as file_incar:
         list1d_incar = file_incar.readlines()
         for int_i in range(len(list1d_incar)):
