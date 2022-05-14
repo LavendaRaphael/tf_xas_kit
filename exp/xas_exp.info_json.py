@@ -1,10 +1,10 @@
 #!/bin/env python
-import xas_module
+import exp
 import os
-import local_module
+import exp_setup
 
-list1d_key = local_module.def_list1d_key()
-dict_structure = local_module.def_dict_structure()
+list1d_key = exp_setup.def_list1d_key()
+dict_structure = exp_setup.def_dict_structure()
 
 for str_key in list1d_key:
     class_structure = dict_structure[ str_key ]
@@ -12,7 +12,7 @@ for str_key in list1d_key:
     os.chdir(str_chdir)
     print(os.getcwd())
     
-    xas_module.def_exp_info_json( 
+    exp.def_exp_info_json(
         class_structure = class_structure,
         str_jsonfile = 'exp_info.json',
         )
