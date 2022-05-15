@@ -1,11 +1,10 @@
 #!/bin/env python
-import xas_module
 import os
-import local_module
+from tf_xas_kit import pp
 
-class_paras = local_module.def_class_paras()
+class_paras = pp.class_paras_code2xas.def_class_paras()
 
-xas_module.def_code2xas(
+pp.def_code2xas(
     str_code = 'vasp',
     str_outfile = class_paras.str_xasfile,
     log_tm2xas = class_paras.log_tm2xas,

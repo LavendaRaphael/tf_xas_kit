@@ -1,10 +1,11 @@
 #!/bin/env python
-import xas_module
 import os
-import local_module
+from tf_xas_kit import exp_class_paras
+from tf_xas_kit import exp_class_structure
 
-list1d_key = local_module.def_list1d_key()
-dict_structure = local_module.def_dict_structure()
+list1d_key = exp_class_structure.def_list1d_key()
+dict_structure = exp_class_structure.def_dict_structure()
+class_paras = exp_class_paras.class_paras()
 
 for str_key in list1d_key:
     class_structure = dict_structure[ str_key ]
@@ -14,7 +15,8 @@ for str_key in list1d_key:
 
     xas_module.def_exp_scaling( 
         class_structure = class_structure,
-        str_outfile = 'xas.exp_scaling.csv'
+        str_outfile = 'xas.exp_scaling.csv',
+        class_paras = class_paras,
         )
 '''
 #--------------------------------------------------[Pt.110]

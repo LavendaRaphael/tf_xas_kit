@@ -1,6 +1,4 @@
-import xas_module
 import os
-import local_module
 
 dict_structure = local_module.def_dict_structure()
 

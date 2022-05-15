@@ -1,7 +1,7 @@
 #!/bin/env python
-import exp
+from tf_xas_kit import exp
 import os
-import exp_setup
+from tf_xas_kit import exp_setup
 
 list1d_key = exp_setup.def_list1d_key()
 dict_structure = exp_setup.def_dict_structure()

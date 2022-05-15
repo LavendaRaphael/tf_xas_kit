@@ -1,6 +1,6 @@
 #!/bin/env python
-import xas_module
 import os
+from tf_xas_kit import exp
 
 str_exp=os.environ['goto_pto_exp']
 os.chdir(str_exp)
@@ -15,8 +15,7 @@ list2d_alpha.append( [41, '20210924.pto110_a41_postscaling.csv',[1,2]] )
 #list2d_alpha.append( [ 45, '20211113.Angel-Pt110-OXAS.csv', [0,5] ])
 #list2d_alpha.append( [ 50, '20211113.Angel-Pt110-OXAS.csv', [0,6] ])
 
-
-xas_module.def_exp_xyzfit( 
+exp.def_exp_xyzfit( 
     list2d_alpha = list2d_alpha,
     str_outfile = 'xyzfit.csv'
 )
