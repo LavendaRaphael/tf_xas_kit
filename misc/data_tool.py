@@ -1,3 +1,95 @@
+def def_broad(
+        array1d_xdata,
+        array2d_ydata,
+        float_hwhm,
+        str_method,
+        int_nbin,
+        ):
+    float_xl = numpy.amin( array1d_xdata )
+    float_xr = numpy.amax( array1d_xdata )
+    array1d_xdata_new = numpy.linspace(
+        start = float_xl,
+        stop = float_xr,
+        num = int_nbin
+        )
+
+    array2d_delta =  array1d_xdata_new[:,None] - array1d_xdata[None,:]
+    array2d_delta = def_lineshape(
+        str_method = str_method,
+        float_x = array2d_delta,
+        float_hwhm = float_hwhm,
+        )
+
+    int_xdata_new_shape = array1d_xdata_new.shape[0]
+    int_ydata_shape1 = array2d_ydata.shape[1]
+    array2d_ydata_new = numpy.empty( shape=( int_xdata_new_shape, int_ydata_shape1 ) )
+    for int_z in range( int_ydata_shape1 ):
+        array1d_temp = array2d_delta * array2d_ydata[ :,int_z ][None,]
+        array2d_ydata_new[ :,int_z ] = numpy.sum( array1d_temp, axis=1 )
+
+    return array1d_xdata_new, array2d_ydata_new
+
+def def_lineshape(
+        str_method,
+        float_x,
+        float_hwhm,
+        ):
+    if ( str_method == 'gaussian' ):
+        float_y = def_gaussian(
+            float_x = float_x,
+            float_hwhm = float_hwhm,
+            )
+    elif ( str_method == 'lorentzian' ):
+        float_y = def_lorentzian(
+            float_x = float_x,
+            float_hwhm = float_hwhm,
+            )
+    else:
+        raise ValueError()
+
+    return float_y
+
+def def_gaussian(
+        float_x,
+        float_hwhm,
+        ):
+    return numpy.sqrt(numpy.log(2) / numpy.pi) / float_hwhm\
+                             * numpy.exp(-(float_x / float_hwhm)**2 * numpy.log(2))
+def def_lorentzian(
+        float_x,
+        float_hwhm,
+        ):
+    return float_hwhm / numpy.pi / (float_x**2 + float_hwhm**2)
+
+def def_mix(list2d_data):
+#------------------------------[]
+# list2d_data = []
+# list2d_data.append( [ array1d_xdata, array2d_ydata, [0,2], 0.7 ] )
+#------------------------------[]
+    dict_args = copy.deepcopy(locals())
+    for list_temp in dict_args['list2d_data']:
+        del list_temp[0:2]
+    def_startfunc( dict_args )
+
+    list2d_xydata = []
+    for list1d_data in list2d_data:
+        list2d_xydata.append( [ list1d_data[0], list1d_data[1] ] )
+    array1d_xdata_interp, list1d_ydata_interp = def_interp( list2d_xydata )
+
+    int_len1dxdata = len( array1d_xdata_interp )
+    int_lenycolumn = len( list2d_data[0][2] )
+    array2d_ydata_mix = numpy.zeros( shape=(int_len1dxdata, int_lenycolumn) )
+
+    int_len2ddata = len(list2d_data)
+    for int_i in range(int_len2ddata):
+        list1d_ycolumn = list2d_data[int_i][2]
+        array2d_ydata = list1d_ydata_interp[ int_i][:, list1d_ycolumn ]
+        float_scaling = list2d_data[int_i][3]
+        array2d_ydata_mix += array2d_ydata * float_scaling
+
+    def_endfunc()
+    return array1d_xdata_interp, array2d_ydata_mix
+
 def def_writedata( list2d_header, list3d_data, str_outfile): 
     def_startfunc( locals(), ['list3d_data'] ) 
  
@@ -138,18 +230,19 @@ def def_findscaling(
 def def_findscaling_dict(
         array1d_xdata,
         array1d_ydata,
-        class_structure
+        tuple_mainxrange,
+        tuple_postxrange,
         ):
     float_mainscaling = def_findscaling(
         array1d_xdata = array1d_xdata,
         array1d_ydata = array1d_ydata,
-        tuple_xrange = class_structure.tuple_mainxrange
+        tuple_xrange = tuple_mainxrange
         )
 
     float_postscaling = def_findscaling(
         array1d_xdata = array1d_xdata,
         array1d_ydata = array1d_ydata,
-        tuple_xrange = class_structure.tuple_postxrange
+        tuple_xrange = tuple_postxrange
         )
     dict_scaling = {
         'float_mainscaling' : float_mainscaling,
@@ -158,76 +251,4 @@ def def_findscaling_dict(
 
     def_print_paras( locals(),['dict_scaling'] )
     return dict_scaling
-
-def def_extract( str_datfile, list1d_column, log_head=True, dtype=float ):
-#------------------------------[]
-#------------------------------[]
-    def_startfunc( locals() )
-
-    with open( str_datfile, 'r', newline='' ) as obj_datfile:
-        obj_datreader = csv.reader( filter( lambda row: (row.strip() and (row.strip()[0]!='#')), obj_datfile ), delimiter= ' ', skipinitialspace=True )
-        if log_head:
-            list1d_line = next(obj_datreader)
-        list1d_line = next(obj_datreader)
-        if (',' in list1d_line[0]):
-            delimiter=','
-        else:
-            delimiter=' '
-    def_print_paras( locals(),['delimiter'] )
-
-    list1d_header = []
-    list2d_data = []
-    with open( str_datfile, 'r', newline='' ) as obj_datfile:
-        obj_datreader = csv.reader( filter( lambda row: (row.strip() and (row.strip()[0]!='#')), obj_datfile ), delimiter=delimiter, skipinitialspace=True )
-        if log_head:
-            list1d_line = next(obj_datreader)
-            list1d_header = [ list1d_line[i] for i in list1d_column ]
-        else:
-            list1d_header = [ '' for i in list1d_column ]
-        def_print_paras( locals(),['list1d_header'] )
-
-        for list1d_line in obj_datreader:
-            if ( not list1d_line[ list1d_column[0] ] ): continue
-            list_temp = []
-            for int_i in list1d_column:
-                list_temp.append( list1d_line[int_i] )
-            list2d_data.append( list_temp )
-    array2d_data = numpy.array( list2d_data, dtype=dtype )
-    tup_shapedata = numpy.shape(array2d_data)
-    def_print_paras( locals(),['tup_shapedata'] )
-
-    def_endfunc()
-    return list1d_header, array2d_data
-
-def def_print_paras( dict_localpara, list_paraname ):
-    dict_paraprint = {}
-    for str_paraname in list_paraname:
-        dict_paraprint[ str_paraname ] = dict_localpara[ str_paraname ]
-    print(json.dumps( dict_paraprint, indent=4, cls=NumpyEncoder ))
-
-class NumpyEncoder(json.JSONEncoder):
-#----------------------------------------------[]
-# https://stackoverflow.com/questions/26646362/numpy-array-is-not-json-serializable
-#----------------------------------------------[]
-    """ Special json encoder for numpy types """
-    def default(self, obj):
-        if isinstance(obj, numpy.integer):
-            return int(obj)
-        elif isinstance(obj, numpy.floating):
-            return float(obj)
-        elif isinstance(obj, numpy.ndarray):
-            return obj.tolist()
-        elif isinstance(obj, type):
-            return str(obj)
-        return json.JSONEncoder.default(self, obj)
-
-def def_startfunc( dict_args={}, list1d_del=[] ):
-    this_function_name = inspect.currentframe().f_back.f_code.co_name
-    print("#"+'-'*20+"["+this_function_name+"]\n")
-    for str_del in list1d_del:
-        del dict_args[ str_del ]
-    print(json.dumps( obj=dict_args, indent=4, cls=NumpyEncoder ))
-
-def def_endfunc():
-    print("#"+'-'*20+"<<\n")
 

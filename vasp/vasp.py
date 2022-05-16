@@ -2,8 +2,24 @@ import os
 import subprocess
 import re
 import numpy
+import ase
 from tf_xas_kit import misc
 from tf_xas_kit import pp
+
+def def_vasp_finalenergy():
+    misc.def_startfunc( locals() )
+
+    float_finalenergy = ase.io.read( filename='OUTCAR' ).get_total_energy()
+    misc.def_print_paras( locals(), ['float_finalenergy'] )
+
+    misc.def_endfunc()
+    return float_finalenergy
+
+def def_sft_vasp( ): 
+    float_finalenergy = def_vasp_finalenergy()
+    float_sft = float_finalenergy
+
+    return float_sft
 
 def def_vasp2xas(
         log_tm2xas = False,
