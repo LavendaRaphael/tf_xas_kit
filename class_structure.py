@@ -3,7 +3,7 @@ class class_structure():
     @property
     def dict_input(self):
         return self._dict_input
-    @dict_marker.setter
+    @dict_input.setter
     def dict_input(self, temp):
         self._dict_input = temp
 
@@ -58,10 +58,10 @@ class class_structure():
     @dict_atom.setter
     def dict_atom(self, dict_temp):
         float_sum = 0
-        for list_i in dict_temp.values(): float_sum += list_i[0]
-        for list_i in dict_temp.values(): list_i[0] /= float_sum
-        for int_i in dict_temp: dict_temp[ int_i ].append( 'atom_'+str(int_i) )
-        self._dict_atom = dict_temp
+        for float_i in dict_temp.values(): float_sum += float_i
+        for float_i in dict_temp.values(): float_i /= float_sum
+        self._dict_atom = {}
+        for int_i in dict_temp: self._dict_atom[int_i] = [ dict_temp[int_i], 'atom_'+str(int_i) ]
 
     @property
     def list1d_bbox(self):

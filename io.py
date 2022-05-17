@@ -1,3 +1,33 @@
+import json
+import inspect
+import numpy
+import csv
+
+def def_writedata( list2d_header, list3d_data, str_outfile): 
+    def_startfunc( locals(), ['list3d_data'] ) 
+ 
+    with open( str_outfile, 'w', newline='' ) as obj_outfile: 
+        obj_outwriter = csv.writer( obj_outfile, delimiter=',' ) 
+        # header 
+        list1d_header = [] 
+        for list1d_temp in list2d_header:  
+            list1d_header.extend( list1d_temp ) 
+        obj_outwriter.writerow( list1d_header ) 
+         
+        int_lenline = numpy.shape( list3d_data[0] )[0] 
+        def_print_paras( locals(),['int_lenline'] ) 
+        for int_i in range(len(list3d_data)): 
+            if ( list3d_data[int_i].ndim == 2 ): continue 
+            list3d_data[int_i] = list3d_data[int_i].reshape(int_lenline,1) 
+        for int_i in range(int_lenline): 
+            list1d_data = [] 
+            for array2d_temp in list3d_data: 
+                list1d_data.extend( array2d_temp[int_i]  )  
+            obj_outwriter.writerow( list1d_data ) 
+ 
+    def_endfunc() 
+    return 
+
 def def_extract( str_datfile, list1d_column, log_head=True, dtype=float ):
 #------------------------------[]
 #------------------------------[]

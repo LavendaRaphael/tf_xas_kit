@@ -2,17 +2,19 @@ import os
 import subprocess
 import re
 import numpy
-import ase
-from tf_xas_kit import misc
+import ase.io
+import pandas
+from tf_xas_kit import io
 from tf_xas_kit import pp
+from tf_xas_kit import data_tool
 
 def def_vasp_finalenergy():
-    misc.def_startfunc( locals() )
+    io.def_startfunc( locals() )
 
     float_finalenergy = ase.io.read( filename='OUTCAR' ).get_total_energy()
-    misc.def_print_paras( locals(), ['float_finalenergy'] )
+    io.def_print_paras( locals(), ['float_finalenergy'] )
 
-    misc.def_endfunc()
+    io.def_endfunc()
     return float_finalenergy
 
 def def_sft_vasp( ): 
@@ -36,7 +38,7 @@ def def_vasp2xas(
         )
 
 def def_vasp_outcar2xas(): 
-    misc.def_startfunc( locals() ) 
+    io.def_startfunc( locals() ) 
  
     str_tempfile = 'outcar2xas.tmp' 
     with open( 'OUTCAR', 'r' ) as obj_datfile: 
@@ -53,13 +55,13 @@ def def_vasp_outcar2xas():
  
     list1d_column = [0] 
     str_datfile = str_tempfile 
-    list1d_xheader, array2d_xdata = misc.def_extract( str_datfile=str_datfile, list1d_column=list1d_column ) 
+    list1d_xheader, array2d_xdata = io.def_extract( str_datfile=str_datfile, list1d_column=list1d_column ) 
  
     list1d_column = [1,2,3] 
-    list1d_yheader, array2d_ydata = misc.def_extract( str_datfile=str_datfile, list1d_column=list1d_column ) 
+    list1d_yheader, array2d_ydata = io.def_extract( str_datfile=str_datfile, list1d_column=list1d_column ) 
  
     int_shapexdata = numpy.shape(array2d_xdata)[0] 
-    misc.def_print_paras( locals(),['int_shapexdata'] ) 
+    io.def_print_paras( locals(),['int_shapexdata'] ) 
     for int_i in range(int_shapexdata): 
         array2d_ydata[int_i,:] *= array2d_xdata[int_i][0] 
  
@@ -73,28 +75,57 @@ def def_vasp_outcar2xas():
     #    str_outfile = 'xas.csv' 
     #) 
  
-    misc.def_endfunc() 
+    io.def_endfunc() 
     return list1d_xheader, list1d_yheader, array2d_xdata, array2d_ydata 
 
 def def_vasp_volume():
-    misc.def_startfunc( locals() )
+    io.def_startfunc( locals() )
 
     float_volume = ase.io.read( filename='OUTCAR' ).get_volume()
-    misc.def_print_paras( locals(), ['float_volume'] )
+    io.def_print_paras( locals(), ['float_volume'] )
 
-    misc.def_endfunc()
+    io.def_endfunc()
     return float_volume
+
+def def_tm_extract( str_datfile='MYCARXAS' ):
+    io.def_startfunc( locals() )
+
+    df_tm = pandas.read_csv(
+        str_datfile,
+        sep=' ',
+        skipinitialspace=True,
+        names= ['E(eV)','x','y','z','band'],
+        usecols=[0,1,2,3,7],
+        comment='#',
+        )
+    array1d_tm_xdata = df_tm['E(eV)'].to_numpy()
+    array2d_tm_ydata = df_tm[['x','y','z']].to_numpy()
+    array2d_tm_ydata *= def_vasp_volume()
+    array1d_tm_band = df_tm['band'].to_numpy()
+
+    int_lenline = numpy.shape( array1d_tm_band )[0]
+    int_nb = numpy.amax( array1d_tm_band )
+    int_nk = int_lenline//int_nb
+    io.def_print_paras( locals(), ['int_lenline','int_nb','int_nk'] )
+    array1d_tm_kpoint = numpy.empty( shape=(int_lenline), dtype= int )
+    for int_k in range(int_nk):
+        array1d_tm_kpoint[ int_nb*int_k:int_nb*(int_k+1) ].fill( int_k+1 )
+    df_tm['kpoint'] = array1d_tm_kpoint
+
+    array2d_tm_kb = df_tm[['kpoint','band']].to_numpy()
+    io.def_endfunc()
+    return array1d_tm_xdata, array2d_tm_ydata, array2d_tm_kb
 
 def def_vasp_tm2xas(
         str_broadmethod,
         float_hwhm,
         int_broadnbin
         ):
-    array1d_tm_xdata, array2d_tm_ydata, _ = misc.def_tm_extract()
+    array1d_tm_xdata, array2d_tm_ydata, _ = def_tm_extract()
 
     array2d_tm_ydata *= array1d_tm_xdata[ :,None ]
 
-    array1d_xdata, array2d_ydata =  pp.def_broad(
+    array1d_xdata, array2d_ydata =  data_tool.def_broad(
         array1d_xdata = array1d_tm_xdata,
         array2d_ydata = array2d_tm_ydata,
         float_hwhm = float_hwhm,

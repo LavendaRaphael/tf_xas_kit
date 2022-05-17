@@ -1,29 +1,32 @@
 import numpy
 import math
-from tf_xas_kit import misc
+import os
+import json
+from tf_xas_kit import io
 from tf_xas_kit import vasp
 from tf_xas_kit import feff
+from tf_xas_kit import data_tool
 
 def def_scaling_json(
         list1d_alignangle,
         list1d_scalingangle,
-        class_structure,
+        instance_structure,
         str_datfile = 'xas.ave.csv'
         ):
 #----------------------------------------------[]
 # list_alignangle = [ alpha0, beta0 ]
 # list_scalingangle = [ alpha1, beta1 ]
 #----------------------------------------------[]
-    misc.def_startfunc( locals(), ['class_structure'] )
+    io.def_startfunc( locals(), ['instance_structure'] )
     #--------------------------------------------------[extract]
     list1d_column = [0]
-    _, array2d_xdata_origin = misc.def_extract(
+    _, array2d_xdata_origin = io.def_extract(
         str_datfile=str_datfile,
         list1d_column = list1d_column,
         )
 
     list1d_column = [1,2,3]
-    _, array2d_ydata_origin = misc.def_extract(
+    _, array2d_ydata_origin = io.def_extract(
         str_datfile=str_datfile,
         list1d_column = list1d_column,
         )
@@ -34,10 +37,10 @@ def def_scaling_json(
         array2d_ydata = array2d_ydata_origin
         )
 
-    dict_peaks = misc.def_findpeaks(
+    dict_peaks = data_tool.def_findpeaks(
         array1d_xdata = array2d_xdata_origin,
         array1d_ydata = array2d_ydata_alphabeta)
-    float_align = class_structure.float_onset - dict_peaks[ 'E(eV)' ][0]
+    float_align = instance_structure.float_onset - dict_peaks[ 'E(eV)' ][0]
     array1d_xdata_align = array2d_xdata_origin + float_align
     #--------------------------------------------------[scaling]
     _, array2d_ydata_alphabeta = def_alphabeta(
@@ -48,8 +51,8 @@ def def_scaling_json(
     dict_scaling = def_findscaling_dict(
         array1d_xdata = array1d_xdata_align,
         array1d_ydata = array2d_ydata_alphabeta,
-        tuple_mainxrange = class_structure.tuple_mainxrange,
-        tuple_postxrange = class_structure.tuple_postxrange,
+        tuple_mainxrange = instance_structure.tuple_mainxrange,
+        tuple_postxrange = instance_structure.tuple_postxrange,
         )
 
     #--------------------------------------------------[output]
@@ -61,7 +64,7 @@ def def_scaling_json(
             fp=obj_jsonfile,
             indent=4 )
 
-    def_endfunc()
+    io.def_endfunc()
     return
 
 def def_weight (
@@ -108,10 +111,10 @@ def def_alphabeta( list2d_angle, array2d_ydata ):
 #   x,y,z
 #   ...
 #----------------------------------------------[]
-    misc.def_startfunc( locals(), ['array2d_ydata'] )
+    io.def_startfunc( locals(), ['array2d_ydata'] )
 
     int_shape2dydata0 = numpy.shape(array2d_ydata)[0]
-    misc.def_print_paras( locals(), ['int_shape2dydata0'] )
+    io.def_print_paras( locals(), ['int_shape2dydata0'] )
     array2d_ydata_alphabeta = numpy.empty( shape=(int_shape2dydata0, len(list2d_angle)) )
     list1d_yheader = []
     for int_i in range(len(list2d_angle)):
@@ -136,7 +139,7 @@ def def_align(
 # list_alignangle = [ alpha0, beta0 ]
 # list_scalingangle = [ alpha1, beta1 ]
 #----------------------------------------------[]
-    misc.def_startfunc( locals(), ['array1d_xdata', 'array2d_ydata'] )
+    io.def_startfunc( locals(), ['array1d_xdata', 'array2d_ydata'] )
 
     array1d_xdata_origin = array1d_xdata
     array2d_ydata_origin = array2d_ydata
@@ -146,7 +149,7 @@ def def_align(
         array2d_ydata = array2d_ydata_origin
         )
 
-    dict_peaks = misc.def_findpeaks(
+    dict_peaks = data_tool.def_findpeaks(
         array1d_xdata = array1d_xdata_origin,
         array1d_ydata = array2d_ydata_alphabeta)
     float_align = float_onset - dict_peaks[ 'E(eV)' ][0]
@@ -157,32 +160,32 @@ def def_align(
     with open( str_jsonfile, 'w' ) as obj_jsonfile:
         json.dump( obj={'float_align': float_align}, fp=obj_jsonfile, indent=4 )
 
-    misc.def_endfunc()
+    io.def_endfunc()
     return array1d_xdata_align
 
 def def_alphabeta_workflow(
-        class_structure,
-        class_paras,
+        instance_structure,
+        instance_paras,
         ):
 #----------------------------------------------[]
 # list_alignangle = [ alpha0, beta0 ]
 # list_scalingangle = [ alpha1, beta1 ]
 #----------------------------------------------[]
-    misc.def_startfunc( locals(), ['class_structure'] )
+    io.def_startfunc( locals(), ['instance_structure', 'instance_paras'] )
 
-    str_datfile = class_paras.str_avefile
-    str_outfile = class_paras.str_alphafile
-    list1d_alignangle = class_paras.list1d_alignangle
-    list2d_angle = class_paras.list2d_angle
+    str_datfile = instance_paras.str_avefile
+    str_outfile = instance_paras.str_alphafile
+    list1d_alignangle = instance_paras.list1d_alignangle
+    list2d_angle = instance_paras.list2d_angle
     #--------------------------------------------------[extract]
     list1d_column = [0]
-    list1d_xheader, array2d_xdata_origin = misc.def_extract(
+    list1d_xheader, array2d_xdata_origin = io.def_extract(
         str_datfile=str_datfile,
         list1d_column = list1d_column,
         )
 
     list1d_column = [1,2,3]
-    _, array2d_ydata_origin = misc.def_extract(
+    _, array2d_ydata_origin = io.def_extract(
         str_datfile=str_datfile,
         list1d_column = list1d_column,
         )
@@ -193,26 +196,23 @@ def def_alphabeta_workflow(
         array1d_xdata = array2d_xdata_origin,
         array2d_ydata = array2d_ydata_origin,
         list1d_alignangle = list1d_alignangle,
-        float_onset = class_structure.float_onset,
+        float_onset = instance_structure.float_onset,
         )
 
-    array2d_ydata_scaling = def_scaling(
-        array2d_ydata = array2d_ydata_origin,
-        float_scaling = class_structure.float_scaling,
-        )
+    array2d_ydata_scaling = array2d_ydata_origin * instance_structure.float_scaling
 
     list1d_yheader, array2d_ydata_alphabeta = def_alphabeta(
         list2d_angle = list2d_angle,
         array2d_ydata = array2d_ydata_scaling
         )
 
-    misc.def_writedata(
+    io.def_writedata(
         list2d_header = [ list1d_xheader, list1d_yheader ],
         list3d_data = [ array1d_xdata_align, array2d_ydata_alphabeta ],
         str_outfile=str_outfile
         )
 
-    misc.def_endfunc()
+    io.def_endfunc()
     return
 
 def def_sft( array1d_xdata, str_code):
@@ -228,13 +228,12 @@ def def_sft( array1d_xdata, str_code):
     return array1d_xdata_sft
 
 def def_ave(
-        class_structure,
-        class_paras,
+        instance_structure,
+        instance_paras,
         ):
-    def_startfunc( locals(), [ 'class_structure' ] )
 
-    dict_atom = class_structure.dict_atom
-    str_code = class_structure.str_code
+    dict_atom = instance_structure.dict_atom
+    str_code = instance_structure.str_code
 
     list2d_data = []
     for list1d_atom in dict_atom.values():
@@ -244,27 +243,27 @@ def def_ave(
         os.chdir(str_chdir)
         print(os.getcwd())
 
-        list1d_xheader, list1d_yheader, array2d_xdata, array2d_ydata = pp.def_code2xas(
+        list1d_xheader, list1d_yheader, array2d_xdata, array2d_ydata = def_code2xas(
             str_code = str_code,
-            str_outfile = class_paras.str_xasfile,
-            log_tm2xas = class_paras.log_tm2xas,
-            str_broadmethod = class_paras.str_broadmethod,
-            float_hwhm = class_paras.float_hwhm,
-            int_broadnbin = class_paras.int_broadnbin,
+            str_outfile = instance_paras.str_xasfile,
+            log_tm2xas = instance_paras.log_tm2xas,
+            str_broadmethod = instance_paras.str_broadmethod,
+            float_hwhm = instance_paras.float_hwhm,
+            int_broadnbin = instance_paras.int_broadnbin,
             )
 
-        array2d_xdata_sft = pp.def_sft( array2d_xdata, str_code )
+        array2d_xdata_sft = def_sft( array2d_xdata, str_code )
 
         list_ycolums = list(range(len(array2d_ydata[0])))
         list2d_data.append( [ array2d_xdata_sft, array2d_ydata, list_ycolums, float_scaling ] )
 
         os.chdir('..')
 
-    array1d_xdata_mix, array2d_ydata_mix = misc.def_mix(list2d_data=list2d_data)
-    misc.def_writedata(
+    array1d_xdata_mix, array2d_ydata_mix = data_tool.def_mix(list2d_data=list2d_data)
+    io.def_writedata(
         list2d_header = [ list1d_xheader, list1d_yheader ],
         list3d_data = [ array1d_xdata_mix, array2d_ydata_mix ],
-        str_outfile = class_paras.str_avefile
+        str_outfile = instance_paras.str_avefile
         )
 
 def def_code2xas(
@@ -287,7 +286,7 @@ def def_code2xas(
     else:
         raise
 
-    misc.def_writedata(
+    io.def_writedata(
         list2d_header = [list1d_xheader, list1d_yheader],
         list3d_data = [array2d_xdata, array2d_ydata],
         str_outfile = str_outfile)

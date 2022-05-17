@@ -1,3 +1,9 @@
+import numpy
+import copy
+import json
+import scipy.signal
+from tf_xas_kit import io
+
 def def_broad(
         array1d_xdata,
         array2d_ydata,
@@ -69,7 +75,7 @@ def def_mix(list2d_data):
     dict_args = copy.deepcopy(locals())
     for list_temp in dict_args['list2d_data']:
         del list_temp[0:2]
-    def_startfunc( dict_args )
+    io.def_startfunc( dict_args )
 
     list2d_xydata = []
     for list1d_data in list2d_data:
@@ -87,40 +93,15 @@ def def_mix(list2d_data):
         float_scaling = list2d_data[int_i][3]
         array2d_ydata_mix += array2d_ydata * float_scaling
 
-    def_endfunc()
+    io.def_endfunc()
     return array1d_xdata_interp, array2d_ydata_mix
-
-def def_writedata( list2d_header, list3d_data, str_outfile): 
-    def_startfunc( locals(), ['list3d_data'] ) 
- 
-    with open( str_outfile, 'w', newline='' ) as obj_outfile: 
-        obj_outwriter = csv.writer( obj_outfile, delimiter=',' ) 
-        # header 
-        list1d_header = [] 
-        for list1d_temp in list2d_header:  
-            list1d_header.extend( list1d_temp ) 
-        obj_outwriter.writerow( list1d_header ) 
-         
-        int_lenline = numpy.shape( list3d_data[0] )[0] 
-        def_print_paras( locals(),['int_lenline'] ) 
-        for int_i in range(len(list3d_data)): 
-            if ( list3d_data[int_i].ndim == 2 ): continue 
-            list3d_data[int_i] = list3d_data[int_i].reshape(int_lenline,1) 
-        for int_i in range(int_lenline): 
-            list1d_data = [] 
-            for array2d_temp in list3d_data: 
-                list1d_data.extend( array2d_temp[int_i]  )  
-            obj_outwriter.writerow( list1d_data ) 
- 
-    def_endfunc() 
-    return 
 
 def def_interp(list2d_data):
 #------------------------------[]
 # list2d_data = []
 # list_data.append( [ array1d_xdata, array2d_ydata ] )
 #------------------------------[]
-    def_startfunc()
+    io.def_startfunc()
 
     for list1d_data in list2d_data:
         list1d_data[0] = list1d_data[0].reshape( -1 )
@@ -155,7 +136,7 @@ def def_interp(list2d_data):
 
         list1d_ydata_interp.append( array2d_temp )
 
-    def_endfunc()
+    io.def_endfunc()
     return array1d_xdata_interp, list1d_ydata_interp
 
 def def_findpeaks(
@@ -166,7 +147,7 @@ def def_findpeaks(
         ):
 #------------------------------[]
 #------------------------------[]
-    def_startfunc( locals(), ['array1d_xdata', 'array1d_ydata'] )
+    io.def_startfunc( locals(), ['array1d_xdata', 'array1d_ydata'] )
 
     array1d_xdata = numpy.reshape( a=array1d_xdata, newshape=-1 )
     array1d_ydata = numpy.reshape( a=array1d_ydata, newshape=-1 )
@@ -183,13 +164,13 @@ def def_findpeaks(
     dict_peaks[ 'E(eV)' ] = array1d_xdata[ array1d_peak_indices ]
     dict_peaks[ 'relheight' ] = dict_properties[ 'peak_heights' ] / float_y_max
     dict_peaks[ 'relprominence' ] = dict_properties[ 'prominences' ] / float_y_max
-    def_print_paras( locals(),['dict_peaks'])
+    io.def_print_paras( locals(),['dict_peaks'])
 
-    def_endfunc()
+    io.def_endfunc()
     return dict_peaks
 
 def def_findarea( array1d_xdata, array1d_ydata, tuple_xrange): 
-    def_startfunc( locals(), ['array1d_xdata', 'array1d_ydata'] ) 
+    io.def_startfunc( locals(), ['array1d_xdata', 'array1d_ydata'] ) 
  
     array1d_xdata = numpy.reshape( a=array1d_xdata, newshape=-1 ) 
     array1d_ydata = numpy.reshape( a=array1d_ydata, newshape=-1 ) 
@@ -207,7 +188,7 @@ def def_findarea( array1d_xdata, array1d_ydata, tuple_xrange):
     float_area = numpy.trapz( y=array_y_new, x=array_x_new ) 
     print(json.dumps( obj={'float_area':float_area}, indent=4)) 
  
-    def_endfunc() 
+    io.def_endfunc() 
     return float_area
 
 def def_findscaling( 
@@ -249,6 +230,6 @@ def def_findscaling_dict(
         'float_postscaling': float_postscaling
         }
 
-    def_print_paras( locals(),['dict_scaling'] )
+    io.def_print_paras( locals(),['dict_scaling'] )
     return dict_scaling
 

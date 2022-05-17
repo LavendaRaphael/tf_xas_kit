@@ -25,7 +25,7 @@ def def_atom_findpeak(
         str_workdir,
         str_jsonfile
         ):
-    def_startfunc( locals() )
+   io.def_startfunc( locals() )
 
     _, _, array2d_xdata, array2d_ydata = def_vasp_outcar2xas()
 
@@ -61,13 +61,13 @@ def def_atom_findpeak(
     array1d_energy_sftplusalign = dict_peaks[ 'E(eV)' ] + float_sftplusalign
     def_print_paras( locals(), ['array1d_energy_origin','array1d_energy_pluscore', 'array1d_energy_sftplusalign'])
 
-    def_endfunc()
+  io.def_endfunc()
 
 def def_chgrdf_workflow( 
         str_chgfile,
         str_outdir='',
         ):
-    def_startfunc( locals() )
+   io.def_startfunc( locals() )
 
     if ( not def_has_numbers(str_chgfile) ):
         str_outfile = 'chgrdf.csv'
@@ -85,7 +85,7 @@ def def_chgrdf_workflow(
             str_outfile = str_outdir+str_outfile
             )
 
-    def_endfunc()
+  io.def_endfunc()
     return
 
 def def_has_numbers(inputString):
@@ -96,7 +96,7 @@ def def_chgrdf(
         float_r0=3, 
         float_slice = 0.05
         ):
-    def_startfunc( locals() )
+   io.def_startfunc( locals() )
 
     obj_chgcar = vasp.VaspChargeDensity(filename=str_chgfile)
     obj_atoms = obj_chgcar.atoms[0]
@@ -176,7 +176,7 @@ def def_chgrdf(
     #float_rho0 = 1 / float_volume
     #array1d_rdf /= float_rho0
 
-    def_endfunc()
+  io.def_endfunc()
     return array1d_r, array1d_rpd, array1d_rpi, array1d_rdf
 
 def def_tm_findmax( 
@@ -187,7 +187,7 @@ def def_tm_findmax(
         str_abname, 
         int_ntm=1, 
         float_xwidth=0.5 ):
-    def_startfunc( locals(), ['array1d_xdata', 'array1d_ydata','array1d_kb'] )
+   io.def_startfunc( locals(), ['array1d_xdata', 'array1d_ydata','array1d_kb'] )
 
     array1d_xdata = numpy.reshape( array1d_xdata, newshape=-1 )
     array1d_ydata = numpy.reshape( array1d_ydata, newshape=-1 )
@@ -213,7 +213,7 @@ def def_tm_findmax(
     with open( str_jsonfile, 'w' ) as obj_jsonfile:
         json.dump( obj=dict_jsonfile, fp=obj_jsonfile, indent=4, cls=NumpyEncoder )
 
-    def_endfunc()
+  io.def_endfunc()
     return array1d_index_topn
 
 def def_atom_abworkflow(  
@@ -263,10 +263,10 @@ def def_atom_abworkflow(
     str_outfile = 'xas_tm.'+str_abname+'.csv'
     def_writedata( list2d_header=list2d_header, list3d_data=list3d_data, str_outfile=str_outfile)
 
-    def_endfunc()
+  io.def_endfunc()
 
 def def_atom_alignscaling(float_align, float_scaling):
-    def_startfunc( locals() )
+   io.def_startfunc( locals() )
 
     class_paras = local_module.def_class_paras()
     #----------------------------------------------[extract]
@@ -287,37 +287,6 @@ def def_atom_alignscaling(float_align, float_scaling):
     array2d_tm_xdata_align = array2d_tm_xdata + float_sft
     array2d_tm_ydata_scaling = array2d_tm_ydata * float_scaling
 
-    def_endfunc()
+  io.def_endfunc()
     return array2d_xdata_align, array2d_ydata_scaling, array2d_tm_xdata_align, array2d_tm_ydata_scaling, array2d_tm_kb
-
-def def_tm_extract( str_datfile='MYCARXAS' ):
-#------------------------------[]
-#------------------------------[]
-    def_startfunc( locals() )
-
-    df_tm = pandas.read_csv( 
-        str_datfile, 
-        sep=' ', 
-        skipinitialspace=True, 
-        names= ['E(eV)','x','y','z','band'],
-        usecols=[0,1,2,3,7],
-        comment='#',
-        )
-    array1d_tm_xdata = df_tm['E(eV)'].to_numpy()
-    array2d_tm_ydata = df_tm[['x','y','z']].to_numpy()
-    array2d_tm_ydata *= def_vasp_volume()
-    array1d_tm_band = df_tm['band'].to_numpy()
-
-    int_lenline = numpy.shape( array1d_tm_band )[0]
-    int_nb = numpy.amax( array1d_tm_band )
-    int_nk = int_lenline//int_nb
-    def_print_paras( locals(), ['int_lenline','int_nb','int_nk'] )
-    array1d_tm_kpoint = numpy.empty( shape=(int_lenline), dtype= int )
-    for int_k in range(int_nk):
-        array1d_tm_kpoint[ int_nb*int_k:int_nb*(int_k+1) ].fill( int_k+1 )
-    df_tm['kpoint'] = array1d_tm_kpoint
-
-    array2d_tm_kb = df_tm[['kpoint','band']].to_numpy()
-    def_endfunc()
-    return array1d_tm_xdata, array2d_tm_ydata, array2d_tm_kb
 
