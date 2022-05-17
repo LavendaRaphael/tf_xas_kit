@@ -59,9 +59,8 @@ class class_structure():
     def dict_atom(self, dict_temp):
         float_sum = 0
         for float_i in dict_temp.values(): float_sum += float_i
-        for float_i in dict_temp.values(): float_i /= float_sum
         self._dict_atom = {}
-        for int_i in dict_temp: self._dict_atom[int_i] = [ dict_temp[int_i], 'atom_'+str(int_i) ]
+        for int_i in dict_temp: self._dict_atom[int_i] = [ dict_temp[int_i]/float_sum, 'atom_'+str(int_i) ]
 
     @property
     def list1d_bbox(self):
